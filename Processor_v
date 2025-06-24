@@ -1,0 +1,64 @@
+module Processor(
+input logic clk,
+input logic reset
+);
+logic[15:0]instr_mem[0:15];
+logic[7:0]reg_file[0:15];
+logic[7:0]data_mem[0:15];
+logic[15:0]IF_ID_instr;
+logic[15:0]ID_EX_instr;
+logic[7:0]ID_EX_rs1_val;
+logic[7:0]ID_EX_rs2_val;
+logic[15:0]EX_MEM_instr;
+logic[7:0]EX_MEM_alu_out;
+logic[15:0]MEM_WB_instr;
+logic[7:0]MEM_WB_result;
+integer pc;
+always@(posedge clk or posedge reset) begin
+if (reset) begin
+pc<=0;
+IF_ID_instr<=0;
+end else begin
+IF_ID_instr<=
+instr_mem[pc];
+pc<=pc+1;
+end
+end
+wire[3:0]opcode=
+IF_ID_instr[15:12];
+wire[3:0]rd=IF_ID_instr[11:8];
+wire[3:0]rs1=IF_ID_instr[7:4];
+wire [3:0]rs2=IF_ID_instr[3:0];
+always@(posedge clk) begin
+ID_EX_instr<=IF_ID_instr;
+ID_EX_rs1_val<=reg_file[rs1];
+ID_EX_rs2_val<=reg_file[rs2];
+end
+logic[7:0]alu_result;
+always@(*) begin
+case(ID_EX_instr[15:12])
+4'b0001:alu_result=
+ID_EX_rs1_val+ID_EX_rs2_val;
+4'b0010:alu_result=
+ID_EX_rs1_val-ID_EX_rs2_val;
+4'b0011:alu_result=
+data_mem[ID_EX_rs1_val];
+default:alu_result=8'h00;
+endcase
+end
+always@(posedge clk) begin
+EX_MEM_instr<=ID_EX_instr;
+EX_MEM_alu_out<=alu_result;
+end
+always@(posedge clk) begin
+MEM_WB_instr<=EX_MEM_instr;
+MEM_WB_result<=EX_MEM_alu_out;
+if(EX_MEM_instr[15:12]==
+4'b0001||EX_MEM_instr[15:12]==
+4'b0010||EX_MEM_instr[15:12]==
+4'b0011) begin
+reg_file[EX_MEM_instr[11:8]]
+<=EX_MEM_alu_out;
+end
+end
+endmodule
