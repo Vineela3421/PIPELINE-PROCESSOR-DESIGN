@@ -1,4 +1,4 @@
-# PIPELINE-PROCESSOR-DESIGN
+
 # Task-3: 4-Stage Processor - CodTech Internship
 
 This is my task-3 for codtech internship. I wrote verilog code for a 4 stage pipelined processor which can do add, sub and load operations. I also wrote a testbench and tested it using iverilog and gtkwave.
